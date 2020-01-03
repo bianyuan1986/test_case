@@ -1,0 +1,556 @@
+[root@VM_14_30_centos ~/test_case/vargs]# gdb ./vargs_test
+GNU gdb (GDB) Red Hat Enterprise Linux 7.6.1-80.el7
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-redhat-linux-gnu".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>...
+Reading symbols from /root/test_case/vargs/vargs_test...done.
+gdb-peda$ break foo
+Breakpoint 1 at 0x400589: file vargs_test.c, line 10.
+gdb-peda$ run
+Starting program: /root/test_case/vargs/./vargs_test 
+[----------------------------------registers-----------------------------------]
+RAX: 0x0 
+RBX: 0x0 
+RCX: 0x40081c --> 0x206f6c6c65680021 ('!')
+RDX: 0x7e4 
+RSI: 0x40081e --> 0x7300206f6c6c6568 ('hello ')
+RDI: 0x400825 --> 0x100000000636473 
+RBP: 0x7fffffffe310 --> 0x7fffffffe330 --> 0x0 
+RSP: 0x7fffffffe220 --> 0x38000000380 
+RIP: 0x400589 (<foo+89>:        mov    DWORD PTR [rbp-0xd8],0x8)
+R8 : 0x7ffff7dd5e80 --> 0x0 
+R9 : 0x0 
+R10: 0x7fffffffde20 --> 0x0 
+R11: 0x7ffff7a38b10 (<__libc_start_main>:       push   r14)
+R12: 0x400440 (<_start>:        xor    ebp,ebp)
+R13: 0x7fffffffe410 --> 0x1 
+R14: 0x0 
+R15: 0x0
+EFLAGS: 0x246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x40057a <foo+74>:   movaps XMMWORD PTR [rbp-0x20],xmm6
+   0x40057e <foo+78>:   movaps XMMWORD PTR [rbp-0x10],xmm7
+   0x400582 <foo+82>:   mov    QWORD PTR [rbp-0xe8],rdi
+=> 0x400589 <foo+89>:   mov    DWORD PTR [rbp-0xd8],0x8
+   0x400593 <foo+99>:   mov    DWORD PTR [rbp-0xd4],0x30
+   0x40059d <foo+109>:  lea    rax,[rbp+0x10]
+   0x4005a1 <foo+113>:  mov    QWORD PTR [rbp-0xd0],rax
+   0x4005a8 <foo+120>:  lea    rax,[rbp-0xb0]
+[------------------------------------stack-------------------------------------]
+0000| 0x7fffffffe220 --> 0x38000000380 
+0008| 0x7fffffffe228 --> 0x400825 --> 0x100000000636473 
+0016| 0x7fffffffe230 --> 0x38000000380 
+0024| 0x7fffffffe238 --> 0x38000000380 
+0032| 0x7fffffffe240 --> 0x2 
+0040| 0x7fffffffe248 --> 0x800000000000000e 
+0048| 0x7fffffffe250 --> 0x0 
+0056| 0x7fffffffe258 --> 0x0 
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+
+Breakpoint 1, foo (fmt=0x400825 "sdc") at vargs_test.c:10
+warning: Source file is more recent than executable.
+10              va_start(ap, fmt);
+Missing separate debuginfos, use: debuginfo-install glibc-2.17-196.tl2.3.x86_64
+gdb-peda$ info registers 
+rax            0x0      0x0
+rbx            0x0      0x0
+rcx            0x40081c 0x40081c
+rdx            0x7e4    0x7e4
+rsi            0x40081e 0x40081e
+rdi            0x400825 0x400825
+rbp            0x7fffffffe310   0x7fffffffe310
+rsp            0x7fffffffe220   0x7fffffffe220
+r8             0x7ffff7dd5e80   0x7ffff7dd5e80
+r9             0x0      0x0
+r10            0x7fffffffde20   0x7fffffffde20
+r11            0x7ffff7a38b10   0x7ffff7a38b10
+r12            0x400440 0x400440
+r13            0x7fffffffe410   0x7fffffffe410
+r14            0x0      0x0
+r15            0x0      0x0
+rip            0x400589 0x400589 <foo+89>
+eflags         0x246    [ PF ZF IF ]
+cs             0x33     0x33
+ss             0x2b     0x2b
+ds             0x0      0x0
+es             0x0      0x0
+fs             0x0      0x0
+gs             0x0      0x0
+gdb-peda$ next
+[----------------------------------registers-----------------------------------]
+RAX: 0x7fffffffe260 --> 0x0 
+RBX: 0x0 
+RCX: 0x40081c --> 0x206f6c6c65680021 ('!')
+RDX: 0x7e4 
+RSI: 0x40081e --> 0x7300206f6c6c6568 ('hello ')
+RDI: 0x400825 --> 0x100000000636473 
+RBP: 0x7fffffffe310 --> 0x7fffffffe330 --> 0x0 
+RSP: 0x7fffffffe220 --> 0x38000000380 
+RIP: 0x4005b6 (<foo+134>:       jmp    0x40071e <foo+494>)
+R8 : 0x7ffff7dd5e80 --> 0x0 
+R9 : 0x0 
+R10: 0x7fffffffde20 --> 0x0 
+R11: 0x7ffff7a38b10 (<__libc_start_main>:       push   r14)
+R12: 0x400440 (<_start>:        xor    ebp,ebp)
+R13: 0x7fffffffe410 --> 0x1 
+R14: 0x0 
+R15: 0x0
+EFLAGS: 0x246 (carry PARITY adjust ZERO sign trap INTERRUPT direction overflow)
+[-------------------------------------code-------------------------------------]
+   0x4005a1 <foo+113>:  mov    QWORD PTR [rbp-0xd0],rax
+   0x4005a8 <foo+120>:  lea    rax,[rbp-0xb0]
+   0x4005af <foo+127>:  mov    QWORD PTR [rbp-0xc8],rax
+=> 0x4005b6 <foo+134>:  jmp    0x40071e <foo+494>
+ | 0x4005bb <foo+139>:  mov    rax,QWORD PTR [rbp-0xe8]
+ | 0x4005c2 <foo+146>:  lea    rdx,[rax+0x1]
+ | 0x4005c6 <foo+150>:  mov    QWORD PTR [rbp-0xe8],rdx
+ | 0x4005cd <foo+157>:  movzx  eax,BYTE PTR [rax]
+ |->   0x40071e <foo+494>:      mov    rax,QWORD PTR [rbp-0xe8]
+       0x400725 <foo+501>:      movzx  eax,BYTE PTR [rax]
+       0x400728 <foo+504>:      test   al,al
+       0x40072a <foo+506>:      jne    0x4005bb <foo+139>
+                                                                  JUMP is taken
+[------------------------------------stack-------------------------------------]
+0000| 0x7fffffffe220 --> 0x38000000380 
+0008| 0x7fffffffe228 --> 0x400825 --> 0x100000000636473 
+0016| 0x7fffffffe230 --> 0x38000000380 
+0024| 0x7fffffffe238 --> 0x3000000008 
+0032| 0x7fffffffe240 --> 0x7fffffffe320 --> 0x7fffffffe418 --> 0x7fffffffe689 ("/root/test_case/vargs/./vargs_test")
+0040| 0x7fffffffe248 --> 0x7fffffffe260 --> 0x0 
+0048| 0x7fffffffe250 --> 0x0 
+0056| 0x7fffffffe258 --> 0x0 
+[------------------------------------------------------------------------------]
+Legend: code, data, rodata, value
+11              while (*fmt)
+gdb-peda$ info registers 
+rax            0x7fffffffe260   0x7fffffffe260
+rbx            0x0      0x0
+rcx            0x40081c 0x40081c
+rdx            0x7e4    0x7e4
+rsi            0x40081e 0x40081e
+rdi            0x400825 0x400825
+rbp            0x7fffffffe310   0x7fffffffe310
+rsp            0x7fffffffe220   0x7fffffffe220
+r8             0x7ffff7dd5e80   0x7ffff7dd5e80
+r9             0x0      0x0
+r10            0x7fffffffde20   0x7fffffffde20
+r11            0x7ffff7a38b10   0x7ffff7a38b10
+r12            0x400440 0x400440
+r13            0x7fffffffe410   0x7fffffffe410
+r14            0x0      0x0
+r15            0x0      0x0
+rip            0x4005b6 0x4005b6 <foo+134>
+eflags         0x246    [ PF ZF IF ]
+cs             0x33     0x33
+ss             0x2b     0x2b
+ds             0x0      0x0
+es             0x0      0x0
+fs             0x0      0x0
+gs             0x0      0x0
+gdb-peda$ print ap
+$2 = {{
+    gp_offset = 0x8, 
+    fp_offset = 0x30, 
+    overflow_arg_area = 0x7fffffffe320, 
+    reg_save_area = 0x7fffffffe260
+  }}
+gdb-peda$ bt
+#0  foo (fmt=0x400825 "sdc") at vargs_test.c:11
+#1  0x000000000040075f in main (argc=0x1, argv=0x7fffffffe418) at vargs_test.c:34
+#2  0x00007ffff7a38c05 in __libc_start_main () from /lib64/libc.so.6
+#3  0x0000000000400469 in _start ()
+gdb-peda$ x /3xg 0x7fffffffe320
+0x7fffffffe320: 0x00007fffffffe418      0x0000000100000000
+0x7fffffffe330: 0x0000000000000000
+gdb-peda$ x /s 0x00007fffffffe418
+0x7fffffffe418: "\211\346\377\377\377\177"
+gdb-peda$ x /3xg 0x7fffffffe310
+0x7fffffffe310: 0x00007fffffffe330      0x000000000040075f
+0x7fffffffe320: 0x00007fffffffe418
+gdb-peda$ print /d 0x2020
+$3 = 8224
+gdb-peda$ disassemble foo
+Dump of assembler code for function foo:
+   0x0000000000400530 <+0>:     push   rbp
+   0x0000000000400531 <+1>:     mov    rbp,rsp
+   0x0000000000400534 <+4>:     sub    rsp,0xf0
+   0x000000000040053b <+11>:    mov    QWORD PTR [rbp-0xa8],rsi
+   0x0000000000400542 <+18>:    mov    QWORD PTR [rbp-0xa0],rdx
+   0x0000000000400549 <+25>:    mov    QWORD PTR [rbp-0x98],rcx
+   0x0000000000400550 <+32>:    mov    QWORD PTR [rbp-0x90],r8
+   0x0000000000400557 <+39>:    mov    QWORD PTR [rbp-0x88],r9
+   0x000000000040055e <+46>:    test   al,al
+   0x0000000000400560 <+48>:    je     0x400582 <foo+82>
+   0x0000000000400562 <+50>:    movaps XMMWORD PTR [rbp-0x80],xmm0
+   0x0000000000400566 <+54>:    movaps XMMWORD PTR [rbp-0x70],xmm1
+   0x000000000040056a <+58>:    movaps XMMWORD PTR [rbp-0x60],xmm2
+   0x000000000040056e <+62>:    movaps XMMWORD PTR [rbp-0x50],xmm3
+   0x0000000000400572 <+66>:    movaps XMMWORD PTR [rbp-0x40],xmm4
+   0x0000000000400576 <+70>:    movaps XMMWORD PTR [rbp-0x30],xmm5
+   0x000000000040057a <+74>:    movaps XMMWORD PTR [rbp-0x20],xmm6
+   0x000000000040057e <+78>:    movaps XMMWORD PTR [rbp-0x10],xmm7
+   0x0000000000400582 <+82>:    mov    QWORD PTR [rbp-0xe8],rdi
+   0x0000000000400589 <+89>:    mov    DWORD PTR [rbp-0xd8],0x8
+   0x0000000000400593 <+99>:    mov    DWORD PTR [rbp-0xd4],0x30
+   0x000000000040059d <+109>:   lea    rax,[rbp+0x10]
+   0x00000000004005a1 <+113>:   mov    QWORD PTR [rbp-0xd0],rax
+   0x00000000004005a8 <+120>:   lea    rax,[rbp-0xb0]
+   0x00000000004005af <+127>:   mov    QWORD PTR [rbp-0xc8],rax
+=> 0x00000000004005b6 <+134>:   jmp    0x40071e <foo+494>
+   0x00000000004005bb <+139>:   mov    rax,QWORD PTR [rbp-0xe8]
+   0x00000000004005c2 <+146>:   lea    rdx,[rax+0x1]
+   0x00000000004005c6 <+150>:   mov    QWORD PTR [rbp-0xe8],rdx
+   0x00000000004005cd <+157>:   movzx  eax,BYTE PTR [rax]
+   0x00000000004005d0 <+160>:   movsx  eax,al
+   0x00000000004005d3 <+163>:   cmp    eax,0x64
+   0x00000000004005d6 <+166>:   je     0x400656 <foo+294>
+   0x00000000004005d8 <+168>:   cmp    eax,0x73
+   0x00000000004005db <+171>:   je     0x4005eb <foo+187>
+   0x00000000004005dd <+173>:   cmp    eax,0x63
+   0x00000000004005e0 <+176>:   je     0x4006ba <foo+394>
+   0x00000000004005e6 <+182>:   jmp    0x40071e <foo+494>
+   0x00000000004005eb <+187>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x00000000004005f1 <+193>:   cmp    eax,0x30
+   0x00000000004005f4 <+196>:   jae    0x400619 <foo+233>
+   0x00000000004005f6 <+198>:   mov    rdx,QWORD PTR [rbp-0xc8]
+   0x00000000004005fd <+205>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x0000000000400603 <+211>:   mov    eax,eax
+   0x0000000000400605 <+213>:   add    rax,rdx
+   0x0000000000400608 <+216>:   mov    edx,DWORD PTR [rbp-0xd8]
+   0x000000000040060e <+222>:   add    edx,0x8
+   0x0000000000400611 <+225>:   mov    DWORD PTR [rbp-0xd8],edx
+   0x0000000000400617 <+231>:   jmp    0x40062e <foo+254>
+   0x0000000000400619 <+233>:   mov    rdx,QWORD PTR [rbp-0xd0]
+   0x0000000000400620 <+240>:   mov    rax,rdx
+   0x0000000000400623 <+243>:   add    rdx,0x8
+   0x0000000000400627 <+247>:   mov    QWORD PTR [rbp-0xd0],rdx
+   0x000000000040062e <+254>:   mov    rax,QWORD PTR [rax]
+   0x0000000000400631 <+257>:   mov    QWORD PTR [rbp-0xb8],rax
+   0x0000000000400638 <+264>:   mov    rax,QWORD PTR [rbp-0xb8]
+   0x000000000040063f <+271>:   mov    rsi,rax
+   0x0000000000400642 <+274>:   mov    edi,0x400800
+   0x0000000000400647 <+279>:   mov    eax,0x0
+   0x000000000040064c <+284>:   call   0x400410 <printf@plt>
+   0x0000000000400651 <+289>:   jmp    0x40071e <foo+494>
+   0x0000000000400656 <+294>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x000000000040065c <+300>:   cmp    eax,0x30
+   0x000000000040065f <+303>:   jae    0x400684 <foo+340>
+   0x0000000000400661 <+305>:   mov    rdx,QWORD PTR [rbp-0xc8]
+   0x0000000000400668 <+312>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x000000000040066e <+318>:   mov    eax,eax
+   0x0000000000400670 <+320>:   add    rax,rdx
+   0x0000000000400673 <+323>:   mov    edx,DWORD PTR [rbp-0xd8]
+   0x0000000000400679 <+329>:   add    edx,0x8
+   0x000000000040067c <+332>:   mov    DWORD PTR [rbp-0xd8],edx
+   0x0000000000400682 <+338>:   jmp    0x400699 <foo+361>
+   0x0000000000400684 <+340>:   mov    rdx,QWORD PTR [rbp-0xd0]
+   0x000000000040068b <+347>:   mov    rax,rdx
+   0x000000000040068e <+350>:   add    rdx,0x8
+   0x0000000000400692 <+354>:   mov    QWORD PTR [rbp-0xd0],rdx
+   0x0000000000400699 <+361>:   mov    eax,DWORD PTR [rax]
+   0x000000000040069b <+363>:   mov    DWORD PTR [rbp-0xbc],eax
+   0x00000000004006a1 <+369>:   mov    eax,DWORD PTR [rbp-0xbc]
+   0x00000000004006a7 <+375>:   mov    esi,eax
+   0x00000000004006a9 <+377>:   mov    edi,0x40080b
+   0x00000000004006ae <+382>:   mov    eax,0x0
+   0x00000000004006b3 <+387>:   call   0x400410 <printf@plt>
+   0x00000000004006b8 <+392>:   jmp    0x40071e <foo+494>
+   0x00000000004006ba <+394>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x00000000004006c0 <+400>:   cmp    eax,0x30
+   0x00000000004006c3 <+403>:   jae    0x4006e8 <foo+440>
+   0x00000000004006c5 <+405>:   mov    rdx,QWORD PTR [rbp-0xc8]
+   0x00000000004006cc <+412>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x00000000004006d2 <+418>:   mov    eax,eax
+   0x00000000004006d4 <+420>:   add    rax,rdx
+   0x00000000004006d7 <+423>:   mov    edx,DWORD PTR [rbp-0xd8]
+   0x00000000004006dd <+429>:   add    edx,0x8
+   0x00000000004006e0 <+432>:   mov    DWORD PTR [rbp-0xd8],edx
+   0x00000000004006e6 <+438>:   jmp    0x4006fd <foo+461>
+   0x00000000004006e8 <+440>:   mov    rdx,QWORD PTR [rbp-0xd0]
+   0x00000000004006ef <+447>:   mov    rax,rdx
+   0x00000000004006f2 <+450>:   add    rdx,0x8
+   0x00000000004006f6 <+454>:   mov    QWORD PTR [rbp-0xd0],rdx
+   0x00000000004006fd <+461>:   mov    eax,DWORD PTR [rax]
+   0x00000000004006ff <+463>:   mov    BYTE PTR [rbp-0xbd],al
+   0x0000000000400705 <+469>:   movsx  eax,BYTE PTR [rbp-0xbd]
+   0x000000000040070c <+476>:   mov    esi,eax
+   0x000000000040070e <+478>:   mov    edi,0x400813
+   0x0000000000400713 <+483>:   mov    eax,0x0
+   0x0000000000400718 <+488>:   call   0x400410 <printf@plt>
+   0x000000000040071d <+493>:   nop
+   0x000000000040071e <+494>:   mov    rax,QWORD PTR [rbp-0xe8]
+   0x0000000000400725 <+501>:   movzx  eax,BYTE PTR [rax]
+   0x0000000000400728 <+504>:   test   al,al
+   0x000000000040072a <+506>:   jne    0x4005bb <foo+139>
+   0x0000000000400730 <+512>:   leave  
+   0x0000000000400731 <+513>:   ret    
+End of assembler dump.
+gdb-peda$ bt
+#0  foo (fmt=0x400825 "sdc") at vargs_test.c:11
+#1  0x000000000040075f in main (argc=0x1, argv=0x7fffffffe418) at vargs_test.c:34
+#2  0x00007ffff7a38c05 in __libc_start_main () from /lib64/libc.so.6
+#3  0x0000000000400469 in _start ()
+gdb-peda$ print $rbp
+$4 = (void *) 0x7fffffffe310
+gdb-peda$ x /3xg $4
+0x7fffffffe310: 0x00007fffffffe330      0x000000000040075f
+0x7fffffffe320: 0x00007fffffffe418
+gdb-peda$ x /s 0x00007fffffffe418
+0x7fffffffe418: "\211\346\377\377\377\177"
+gdb-peda$ print fmt
+$5 = 0x400825 "sdc"
+gdb-peda$ x /8xb 0x00007fffffffe418
+0x7fffffffe418: 0x89    0xe6    0xff    0xff    0xff    0x7f    0x00    0x00
+gdb-peda$ x /8xb 0x7fffffffe689
+0x7fffffffe689: 0x2f    0x72    0x6f    0x6f    0x74    0x2f    0x74    0x65
+gdb-peda$ info registers 
+rax            0x7fffffffe260   0x7fffffffe260
+rbx            0x0      0x0
+rcx            0x40081c 0x40081c
+rdx            0x7e4    0x7e4
+rsi            0x40081e 0x40081e
+rdi            0x400825 0x400825
+rbp            0x7fffffffe310   0x7fffffffe310
+rsp            0x7fffffffe220   0x7fffffffe220
+r8             0x7ffff7dd5e80   0x7ffff7dd5e80
+r9             0x0      0x0
+r10            0x7fffffffde20   0x7fffffffde20
+r11            0x7ffff7a38b10   0x7ffff7a38b10
+r12            0x400440 0x400440
+r13            0x7fffffffe410   0x7fffffffe410
+r14            0x0      0x0
+r15            0x0      0x0
+rip            0x4005b6 0x4005b6 <foo+134>
+eflags         0x246    [ PF ZF IF ]
+cs             0x33     0x33
+ss             0x2b     0x2b
+ds             0x0      0x0
+es             0x0      0x0
+fs             0x0      0x0
+gs             0x0      0x0
+gdb-peda$ print /d 0x7e4
+$6 = 2020
+gdb-peda$ print ap
+$7 = {{
+    gp_offset = 0x8, 
+    fp_offset = 0x30, 
+    overflow_arg_area = 0x7fffffffe320, 
+    reg_save_area = 0x7fffffffe260
+  }}
+gdb-peda$ disassemble foo
+Dump of assembler code for function foo:
+   0x0000000000400530 <+0>:     push   rbp
+   0x0000000000400531 <+1>:     mov    rbp,rsp
+   0x0000000000400534 <+4>:     sub    rsp,0xf0
+   /*因为64位机器使用寄存器传递参数，所以此处把参数存入栈中，这样va_list才能根据类型依次获取到对应的参数*/
+   0x000000000040053b <+11>:    mov    QWORD PTR [rbp-0xa8],rsi
+   0x0000000000400542 <+18>:    mov    QWORD PTR [rbp-0xa0],rdx
+   0x0000000000400549 <+25>:    mov    QWORD PTR [rbp-0x98],rcx
+   0x0000000000400550 <+32>:    mov    QWORD PTR [rbp-0x90],r8
+   0x0000000000400557 <+39>:    mov    QWORD PTR [rbp-0x88],r9
+   0x000000000040055e <+46>:    test   al,al
+   0x0000000000400560 <+48>:    je     0x400582 <foo+82>
+   0x0000000000400562 <+50>:    movaps XMMWORD PTR [rbp-0x80],xmm0
+   0x0000000000400566 <+54>:    movaps XMMWORD PTR [rbp-0x70],xmm1
+   0x000000000040056a <+58>:    movaps XMMWORD PTR [rbp-0x60],xmm2
+   0x000000000040056e <+62>:    movaps XMMWORD PTR [rbp-0x50],xmm3
+   0x0000000000400572 <+66>:    movaps XMMWORD PTR [rbp-0x40],xmm4
+   0x0000000000400576 <+70>:    movaps XMMWORD PTR [rbp-0x30],xmm5
+   0x000000000040057a <+74>:    movaps XMMWORD PTR [rbp-0x20],xmm6
+   0x000000000040057e <+78>:    movaps XMMWORD PTR [rbp-0x10],xmm7
+   0x0000000000400582 <+82>:    mov    QWORD PTR [rbp-0xe8],rdi
+   0x0000000000400589 <+89>:    mov    DWORD PTR [rbp-0xd8],0x8
+   0x0000000000400593 <+99>:    mov    DWORD PTR [rbp-0xd4],0x30
+   0x000000000040059d <+109>:   lea    rax,[rbp+0x10]
+   0x00000000004005a1 <+113>:   mov    QWORD PTR [rbp-0xd0],rax
+   0x00000000004005a8 <+120>:   lea    rax,[rbp-0xb0]
+   0x00000000004005af <+127>:   mov    QWORD PTR [rbp-0xc8],rax
+=> 0x00000000004005b6 <+134>:   jmp    0x40071e <foo+494>
+   0x00000000004005bb <+139>:   mov    rax,QWORD PTR [rbp-0xe8]
+   0x00000000004005c2 <+146>:   lea    rdx,[rax+0x1]
+   0x00000000004005c6 <+150>:   mov    QWORD PTR [rbp-0xe8],rdx
+   0x00000000004005cd <+157>:   movzx  eax,BYTE PTR [rax]
+   0x00000000004005d0 <+160>:   movsx  eax,al
+   0x00000000004005d3 <+163>:   cmp    eax,0x64
+   0x00000000004005d6 <+166>:   je     0x400656 <foo+294>
+   0x00000000004005d8 <+168>:   cmp    eax,0x73
+   0x00000000004005db <+171>:   je     0x4005eb <foo+187>
+   0x00000000004005dd <+173>:   cmp    eax,0x63
+   0x00000000004005e0 <+176>:   je     0x4006ba <foo+394>
+   0x00000000004005e6 <+182>:   jmp    0x40071e <foo+494>
+   0x00000000004005eb <+187>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x00000000004005f1 <+193>:   cmp    eax,0x30
+   0x00000000004005f4 <+196>:   jae    0x400619 <foo+233>
+   0x00000000004005f6 <+198>:   mov    rdx,QWORD PTR [rbp-0xc8]
+   0x00000000004005fd <+205>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x0000000000400603 <+211>:   mov    eax,eax
+   0x0000000000400605 <+213>:   add    rax,rdx
+   0x0000000000400608 <+216>:   mov    edx,DWORD PTR [rbp-0xd8]
+   0x000000000040060e <+222>:   add    edx,0x8
+   0x0000000000400611 <+225>:   mov    DWORD PTR [rbp-0xd8],edx
+   0x0000000000400617 <+231>:   jmp    0x40062e <foo+254>
+   0x0000000000400619 <+233>:   mov    rdx,QWORD PTR [rbp-0xd0]
+   0x0000000000400620 <+240>:   mov    rax,rdx
+   0x0000000000400623 <+243>:   add    rdx,0x8
+   0x0000000000400627 <+247>:   mov    QWORD PTR [rbp-0xd0],rdx
+   0x000000000040062e <+254>:   mov    rax,QWORD PTR [rax]
+   0x0000000000400631 <+257>:   mov    QWORD PTR [rbp-0xb8],rax
+   0x0000000000400638 <+264>:   mov    rax,QWORD PTR [rbp-0xb8]
+   0x000000000040063f <+271>:   mov    rsi,rax
+   0x0000000000400642 <+274>:   mov    edi,0x400800
+   0x0000000000400647 <+279>:   mov    eax,0x0
+   0x000000000040064c <+284>:   call   0x400410 <printf@plt>
+   0x0000000000400651 <+289>:   jmp    0x40071e <foo+494>
+   0x0000000000400656 <+294>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x000000000040065c <+300>:   cmp    eax,0x30
+   0x000000000040065f <+303>:   jae    0x400684 <foo+340>
+   0x0000000000400661 <+305>:   mov    rdx,QWORD PTR [rbp-0xc8]
+   0x0000000000400668 <+312>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x000000000040066e <+318>:   mov    eax,eax
+   0x0000000000400670 <+320>:   add    rax,rdx
+   0x0000000000400673 <+323>:   mov    edx,DWORD PTR [rbp-0xd8]
+   0x0000000000400679 <+329>:   add    edx,0x8
+   0x000000000040067c <+332>:   mov    DWORD PTR [rbp-0xd8],edx
+   0x0000000000400682 <+338>:   jmp    0x400699 <foo+361>
+   0x0000000000400684 <+340>:   mov    rdx,QWORD PTR [rbp-0xd0]
+   0x000000000040068b <+347>:   mov    rax,rdx
+   0x000000000040068e <+350>:   add    rdx,0x8
+   0x0000000000400692 <+354>:   mov    QWORD PTR [rbp-0xd0],rdx
+   0x0000000000400699 <+361>:   mov    eax,DWORD PTR [rax]
+   0x000000000040069b <+363>:   mov    DWORD PTR [rbp-0xbc],eax
+   0x00000000004006a1 <+369>:   mov    eax,DWORD PTR [rbp-0xbc]
+   0x00000000004006a7 <+375>:   mov    esi,eax
+   0x00000000004006a9 <+377>:   mov    edi,0x40080b
+   0x00000000004006ae <+382>:   mov    eax,0x0
+   0x00000000004006b3 <+387>:   call   0x400410 <printf@plt>
+   0x00000000004006b8 <+392>:   jmp    0x40071e <foo+494>
+   0x00000000004006ba <+394>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x00000000004006c0 <+400>:   cmp    eax,0x30
+   0x00000000004006c3 <+403>:   jae    0x4006e8 <foo+440>
+   0x00000000004006c5 <+405>:   mov    rdx,QWORD PTR [rbp-0xc8]
+   0x00000000004006cc <+412>:   mov    eax,DWORD PTR [rbp-0xd8]
+   0x00000000004006d2 <+418>:   mov    eax,eax
+   0x00000000004006d4 <+420>:   add    rax,rdx
+   0x00000000004006d7 <+423>:   mov    edx,DWORD PTR [rbp-0xd8]
+   0x00000000004006dd <+429>:   add    edx,0x8
+   0x00000000004006e0 <+432>:   mov    DWORD PTR [rbp-0xd8],edx
+   0x00000000004006e6 <+438>:   jmp    0x4006fd <foo+461>
+   0x00000000004006e8 <+440>:   mov    rdx,QWORD PTR [rbp-0xd0]
+   0x00000000004006ef <+447>:   mov    rax,rdx
+   0x00000000004006f2 <+450>:   add    rdx,0x8
+   0x00000000004006f6 <+454>:   mov    QWORD PTR [rbp-0xd0],rdx
+   0x00000000004006fd <+461>:   mov    eax,DWORD PTR [rax]
+   0x00000000004006ff <+463>:   mov    BYTE PTR [rbp-0xbd],al
+   0x0000000000400705 <+469>:   movsx  eax,BYTE PTR [rbp-0xbd]
+   0x000000000040070c <+476>:   mov    esi,eax
+   0x000000000040070e <+478>:   mov    edi,0x400813
+   0x0000000000400713 <+483>:   mov    eax,0x0
+   0x0000000000400718 <+488>:   call   0x400410 <printf@plt>
+   0x000000000040071d <+493>:   nop
+   0x000000000040071e <+494>:   mov    rax,QWORD PTR [rbp-0xe8]
+   0x0000000000400725 <+501>:   movzx  eax,BYTE PTR [rax]
+   0x0000000000400728 <+504>:   test   al,al
+   0x000000000040072a <+506>:   jne    0x4005bb <foo+139>
+   0x0000000000400730 <+512>:   leave  
+   0x0000000000400731 <+513>:   ret    
+End of assembler dump.
+gdb-peda$ print $rbp
+$8 = (void *) 0x7fffffffe310
+/*计算参数存储的首地址*/
+gdb-peda$ print $rbp-0xa8
+$9 = (void *) 0x7fffffffe268
+/*查看参数内容*/
+gdb-peda$ x /4xg $9 
+0x7fffffffe268: 0x000000000040081e      0x00000000000007e4
+0x7fffffffe278: 0x000000000040081c      0x00007ffff7dd5e80
+/*ap结构体的内容*/
+gdb-peda$ print ap
+$10 = {{
+    gp_offset = 0x8, 
+    fp_offset = 0x30, 
+    overflow_arg_area = 0x7fffffffe320, 
+    reg_save_area = 0x7fffffffe260
+  }}
+/*可以看到参数符合我们的推断*/
+gdb-peda$ x /s 0x000000000040081e
+0x40081e:       "hello "
+gdb-peda$ print /d 0x00000000000007e4
+$11 = 2020
+gdb-peda$ x /s 0x000000000040081c
+0x40081c:       "!"
+gdb-peda$ print 0x7fffffffe320-0x7fffffffe260
+$12 = 0xc0
+gdb-peda$ info registers 
+rax            0x7fffffffe260   0x7fffffffe260
+rbx            0x0      0x0
+rcx            0x40081c 0x40081c
+rdx            0x7e4    0x7e4
+rsi            0x40081e 0x40081e
+rdi            0x400825 0x400825
+rbp            0x7fffffffe310   0x7fffffffe310
+rsp            0x7fffffffe220   0x7fffffffe220
+r8             0x7ffff7dd5e80   0x7ffff7dd5e80
+r9             0x0      0x0
+r10            0x7fffffffde20   0x7fffffffde20
+r11            0x7ffff7a38b10   0x7ffff7a38b10
+r12            0x400440 0x400440
+r13            0x7fffffffe410   0x7fffffffe410
+r14            0x0      0x0
+r15            0x0      0x0
+rip            0x4005b6 0x4005b6 <foo+134>
+eflags         0x246    [ PF ZF IF ]
+cs             0x33     0x33
+ss             0x2b     0x2b
+ds             0x0      0x0
+es             0x0      0x0
+fs             0x0      0x0
+gs             0x0      0x0
+
+
+[root@VM_14_30_centos ~/test_case/vargs]# cat vargs_test.c 
+#include <stdio.h>
+#include <stdarg.h>
+
+void foo(char *fmt, ...)
+{
+        va_list ap;
+        int d;
+        char c, *s;
+
+        va_start(ap, fmt);
+        while (*fmt)
+        {
+                switch (*fmt++) {
+                        case 's':              /* string */
+                                s = va_arg(ap, char *);
+                                printf("string %s\n", s);
+                                break;
+                        case 'd':              /* int */
+                                d = va_arg(ap, int);
+                                printf("int %d\n", d);
+                                break;
+                        case 'c':              /* char */
+                                /* need a cast here since va_arg only takes fully promoted types */
+                                c = (char) va_arg(ap, int);
+                                printf("char %c\n", c);
+                                break;
+                }
+        }
+        va_end(ap);
+}
+
+int main(int argc, char *argv[])
+{
+        foo("sdc", "hello ", 2020, "!");
+
+        return 0;
+}
+
+/*va_list中保存了栈中的某个地址，根据该地址可以依次获取传递进来的参数，该va_list可以在函数调用时进行传递，
+因为保留了外层函数的栈地址所以依然可以获取到对应的参数，va_start应该就是完成初始化地址工作的。*/
