@@ -1,0 +1,10 @@
+[root@VM_14_30_centos ~/test_case/md5]# objdump -s -j .comment main
+
+main:     file format elf64-x86-64
+
+Contents of section .comment:
+0000 4743433a 2028474e 55292034 2e382e35  GCC: (GNU) 4.8.5
+0010 20323031 35303632 33202852 65642048   20150623 (Red H
+0020 61742034 2e382e35 2d342900           at 4.8.5-4).   
+
+/*strip -R .comment main*/
