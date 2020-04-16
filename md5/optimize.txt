@@ -8,3 +8,238 @@ Contents of section .comment:
 0020 61742034 2e382e35 2d342900           at 4.8.5-4).   
 
 /*strip -R .comment main*/
+
+
+/*把int数组转换为char数组，减少.rodata节的大小*/
+There are 22 section headers, starting at offset 0x2110:
+
+Section Headers:
+  [Nr] Name              Type             Address           Offset
+       Size              EntSize          Flags  Link  Info  Align
+  [ 0]                   NULL             0000000000000000  00000000
+       0000000000000000  0000000000000000           0     0     0
+  [ 1] .interp           PROGBITS         0000000000400238  00000238
+       000000000000001c  0000000000000000   A       0     0     1
+  [ 2] .dynsym           DYNSYM           00000000004002b8  000002b8
+       00000000000000f0  0000000000000018   A       3     1     8
+  [ 3] .dynstr           STRTAB           00000000004003a8  000003a8
+       0000000000000062  0000000000000000   A       0     0     1
+  [ 4] .gnu.version      VERSYM           000000000040040a  0000040a
+       0000000000000014  0000000000000002   A       2     0     2
+  [ 5] .gnu.version_r    VERNEED          0000000000400420  00000420
+       0000000000000020  0000000000000000   A       3     1     8
+  [ 6] .rela.dyn         RELA             0000000000400440  00000440
+       0000000000000018  0000000000000018   A       2     0     8
+  [ 7] .rela.plt         RELA             0000000000400458  00000458
+       00000000000000d8  0000000000000018   A       2     9     8
+  [ 8] .init             PROGBITS         0000000000400530  00000530
+       000000000000001a  0000000000000000  AX       0     0     4
+  [ 9] .plt              PROGBITS         0000000000400550  00000550
+       00000000000000a0  0000000000000010  AX       0     0     16
+  [10] .text             PROGBITS         00000000004005f0  000005f0
+       0000000000000420  0000000000000000  AX       0     0     16
+  [11] .fini             PROGBITS         0000000000400a10  00000a10
+       0000000000000009  0000000000000000  AX       0     0     4
+  [12] .rodata           PROGBITS         0000000000400a20  00000a20
+       00000000000001d0  0000000000000000   A       0     0     16
+  [13] .init_array       INIT_ARRAY       0000000000601e10  00001e10
+       0000000000000008  0000000000000000  WA       0     0     8
+  [14] .fini_array       FINI_ARRAY       0000000000601e18  00001e18
+       0000000000000008  0000000000000000  WA       0     0     8
+  [15] .jcr              PROGBITS         0000000000601e20  00001e20
+       0000000000000008  0000000000000000  WA       0     0     8
+  [16] .dynamic          DYNAMIC          0000000000601e28  00001e28
+       00000000000001d0  0000000000000010  WA       3     0     8
+  [17] .got              PROGBITS         0000000000601ff8  00001ff8
+       0000000000000008  0000000000000008  WA       0     0     8
+  [18] .got.plt          PROGBITS         0000000000602000  00002000
+       0000000000000060  0000000000000008  WA       0     0     8
+  [19] .data             PROGBITS         0000000000602060  00002060
+       0000000000000004  0000000000000000  WA       0     0     4
+  [20] .bss              NOBITS           0000000000602070  00002064
+       0000000000003c30  0000000000000000  WA       0     0     16
+  [21] .shstrtab         STRTAB           0000000000000000  00002064
+       00000000000000ac  0000000000000000           0     0     1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), l (large)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+/*使用int数组时.rodata节的大小*/
+There are 22 section headers, starting at offset 0x2110:
+
+Section Headers:
+  [Nr] Name              Type             Address           Offset
+       Size              EntSize          Flags  Link  Info  Align
+  [ 0]                   NULL             0000000000000000  00000000
+       0000000000000000  0000000000000000           0     0     0
+  [ 1] .interp           PROGBITS         0000000000400238  00000238
+       000000000000001c  0000000000000000   A       0     0     1
+  [ 2] .dynsym           DYNSYM           00000000004002b8  000002b8
+       00000000000000f0  0000000000000018   A       3     1     8
+  [ 3] .dynstr           STRTAB           00000000004003a8  000003a8
+       0000000000000062  0000000000000000   A       0     0     1
+  [ 4] .gnu.version      VERSYM           000000000040040a  0000040a
+       0000000000000014  0000000000000002   A       2     0     2
+  [ 5] .gnu.version_r    VERNEED          0000000000400420  00000420
+       0000000000000020  0000000000000000   A       3     1     8
+  [ 6] .rela.dyn         RELA             0000000000400440  00000440
+       0000000000000018  0000000000000018   A       2     0     8
+  [ 7] .rela.plt         RELA             0000000000400458  00000458
+       00000000000000d8  0000000000000018   A       2     9     8
+  [ 8] .init             PROGBITS         0000000000400530  00000530
+       000000000000001a  0000000000000000  AX       0     0     4
+  [ 9] .plt              PROGBITS         0000000000400550  00000550
+       00000000000000a0  0000000000000010  AX       0     0     16
+  [10] .text             PROGBITS         00000000004005f0  000005f0
+       0000000000000420  0000000000000000  AX       0     0     16
+  [11] .fini             PROGBITS         0000000000400a10  00000a10
+       0000000000000009  0000000000000000  AX       0     0     4
+  [12] .rodata           PROGBITS         0000000000400a20  00000a20
+       0000000000000290  0000000000000000   A       0     0     16
+  [13] .init_array       INIT_ARRAY       0000000000601e10  00001e10
+       0000000000000008  0000000000000000  WA       0     0     8
+  [14] .fini_array       FINI_ARRAY       0000000000601e18  00001e18
+       0000000000000008  0000000000000000  WA       0     0     8
+  [15] .jcr              PROGBITS         0000000000601e20  00001e20
+       0000000000000008  0000000000000000  WA       0     0     8
+  [16] .dynamic          DYNAMIC          0000000000601e28  00001e28
+       00000000000001d0  0000000000000010  WA       3     0     8
+  [17] .got              PROGBITS         0000000000601ff8  00001ff8
+       0000000000000008  0000000000000008  WA       0     0     8
+  [18] .got.plt          PROGBITS         0000000000602000  00002000
+       0000000000000060  0000000000000008  WA       0     0     8
+  [19] .data             PROGBITS         0000000000602060  00002060
+       0000000000000004  0000000000000000  WA       0     0     4
+  [20] .bss              NOBITS           0000000000602070  00002064
+       0000000000003c30  0000000000000000  WA       0     0     16
+  [21] .shstrtab         STRTAB           0000000000000000  00002064
+       00000000000000ac  0000000000000000           0     0     1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), l (large)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+/*减少.rodata节后，文件体积却没有减小，可以看到.rodata后面的节在文件中偏移也没有改变*/
+0000a20 0001 0002 0000 0000 0000 0000 0000 0000
+0000a30 702f 6f72 2f63 6425 652f 6578 2500 3230
+0000a40 2578 3230 2578 3230 2578 3230 0078 0000
+0000a50 0007 0000 000c 0000 0011 0000 0016 0000
+*
+0000a90 0005 0000 0009 0000 000e 0000 0014 0000
+*
+0000ad0 0004 0000 000b 0000 0010 0000 0017 0000
+*
+0000b10 0006 0000 000a 0000 000f 0000 0015 0000
+*
+0000b50 0100 0302 0504 0706 0908 0b0a 0d0c 0f0e
+0000b60 0601 000b 0a05 040f 0e09 0803 020d 0c07
+0000b70 0805 0e0b 0401 0a07 000d 0603 0c09 020f
+0000b80 0700 050e 030c 010a 0f08 0d06 0b04 0902
+0000b90 a478 d76a b756 e8c7 70db 2420 ceee c1bd
+0000ba0 0faf f57c c62a 4787 4613 a830 9501 fd46
+0000bb0 98d8 6980 f7af 8b44 5bb1 ffff d7be 895c
+0000bc0 1122 6b90 7193 fd98 438e a679 0821 49b4
+0000bd0 2562 f61e b340 c040 5a51 265e c7aa e9b6
+0000be0 105d d62f 1453 0244 e681 d8a1 fbc8 e7d3
+0000bf0 cde6 21e1 07d6 c337 0d87 f4d5 14ed 455a
+0000c00 e905 a9e3 a3f8 fcef 02d9 676f 4c8a 8d2a
+0000c10 3942 fffa f681 8771 6122 6d9d 380c fde5
+0000c20 ea44 a4be cfa9 4bde 4b60 f6bb bc70 bebf
+0000c30 7ec6 289b 27fa eaa1 3085 d4ef 1d05 0488
+0000c40 d039 d9d4 99e5 e6db 7cf8 1fa2 5665 c4ac
+0000c50 2244 f429 ff97 432a 23a7 ab94 a039 fc93
+0000c60 59c3 655b cc92 8f0c f47d ffef 5dd1 8584
+0000c70 7e4f 6fa8 e6e0 fe2c 4314 a301 11a1 4e08
+0000c80 7e82 f753 f235 bd3a d2bb 2ad7 d391 eb86
+0000c90 0850 0040 0000 0000 0859 0040 0000 0000
+0000ca0 0862 0040 0000 0000 0869 0040 0000 0000
+0000cb0 0000 0000 0000 0000 0000 0000 0000 0000
+*
+0001e10
+/*hexdump查看发现.rodata和.init_array节之间填充了很多个零字节*/
+Elf file type is EXEC (Executable file)
+Entry point 0x400780
+There are 8 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset             VirtAddr           PhysAddr
+                 FileSiz            MemSiz              Flags  Align
+  PHDR           0x0000000000000040 0x0000000000400040 0x0000000000400040
+                 0x00000000000001c0 0x00000000000001c0  R E    8
+  INTERP         0x0000000000000238 0x0000000000400238 0x0000000000400238
+                 0x000000000000001c 0x000000000000001c  R      1
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+  LOAD           0x0000000000000000 0x0000000000400000 0x0000000000400000
+                 0x0000000000000c00 0x0000000000000c00  R E    200000
+  LOAD           0x0000000000001de0 0x0000000000601de0 0x0000000000601de0
+                 0x0000000000000284 0x0000000000003ec0  RW     200000
+  DYNAMIC        0x0000000000001e20 0x0000000000601e20 0x0000000000601e20
+                 0x00000000000001d0 0x00000000000001d0  RW     8
+  NOTE           0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  R      8
+  GNU_EH_FRAME   0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  R      8
+  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  RW     8
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .dynsym .dynstr .gnu.version .gnu.version_r .rela.dyn .rela.plt .init .plt .text .fini .rodata 
+   03     .init_array .fini_array .jcr .data.rel.ro .dynamic .got .got.plt .data .bss 
+   04     .dynamic 
+   05     
+   06     
+   07     
+
+
+
++ gcc -v main.c -fPIC -Os -o main
+Using built-in specs.
+COLLECT_GCC=gcc
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/lto-wrapper
+Target: x86_64-redhat-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,objc,obj-c++,java,fortran,ada,go,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.5-20150702/obj-x86_64-redhat-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-redhat-linux
+Thread model: posix
+gcc version 4.8.5 20150623 (Red Hat 4.8.5-4) (GCC) 
+	COLLECT_GCC_OPTIONS='-v' '-fPIC' '-Os' '-o' 'main' '-mtune=generic' '-march=x86-64'
+	 /usr/libexec/gcc/x86_64-redhat-linux/4.8.5/cc1 -quiet -v main.c -quiet -dumpbase main.c -mtune=generic -march=x86-64 -auxbase main -Os -version -fPIC -o /tmp/ccrNAfUZ.s
+	 GNU C (GCC) version 4.8.5 20150623 (Red Hat 4.8.5-4) (x86_64-redhat-linux)
+	        compiled by GNU C version 4.8.5 20150623 (Red Hat 4.8.5-4), GMP version 5.1.1, MPFR version 3.1.1, MPC version 1.0.1
+			warning: GMP header version 5.1.1 differs from library version 6.0.0.
+			GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+			ignoring nonexistent directory "/usr/lib/gcc/x86_64-redhat-linux/4.8.5/include-fixed"
+			ignoring nonexistent directory "/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../x86_64-redhat-linux/include"
+#include "..." search starts here:
+#include <...> search starts here:
+			 /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include
+			  /usr/local/include
+			   /usr/include
+			   End of search list.
+			   GNU C (GCC) version 4.8.5 20150623 (Red Hat 4.8.5-4) (x86_64-redhat-linux)
+	        compiled by GNU C version 4.8.5 20150623 (Red Hat 4.8.5-4), GMP version 5.1.1, MPFR version 3.1.1, MPC version 1.0.1
+			warning: GMP header version 5.1.1 differs from library version 6.0.0.
+			GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+			Compiler executable checksum: 9056de5093e628ed35cebee7490512f3
+			COLLECT_GCC_OPTIONS='-v' '-fPIC' '-Os' '-o' 'main' '-mtune=generic' '-march=x86-64'
+			 as -v --64 -o /tmp/ccQGHFg7.o /tmp/ccrNAfUZ.s
+			 GNU assembler version 2.23.52.0.1 (x86_64-redhat-linux) using BFD version version 2.23.52.0.1-55.el7 20130226
+			 COMPILER_PATH=/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/:/usr/libexec/gcc/x86_64-redhat-linux/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/
+			 LIBRARY_PATH=/usr/lib/gcc/x86_64-redhat-linux/4.8.5/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../:/lib/:/usr/lib/
+			 COLLECT_GCC_OPTIONS='-v' '-fPIC' '-Os' '-o' 'main' '-mtune=generic' '-march=x86-64'
+			  /usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2 --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o main /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtbegin.o -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. /tmp/ccQGHFg7.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-redhat-linux/4.8.5/crtend.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o
+
+
+/*开启-v查看gcc会默认连接crtbegin.o crtend.o，这两个文件用于c++构造和析构函数，因此不需要链接，修改编译脚本编译时不再连接这两个文件*/
+/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/cc1 -quiet -v main.c -quiet -dumpbase main.c -mtune=generic -march=x86-64 -auxbase main -Os -version -o /tmp/ccVvtbNu.s
+as -v --64 -o /tmp/ccAYgYY2.o /tmp/ccVvtbNu.s
+/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2 --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o main /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crt1.o /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crti.o -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. /tmp/ccAYgYY2.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o
+
+
+/*把section表去除掉，程序执行时不需要该表*/
+sstrip ./main
+
+
+
