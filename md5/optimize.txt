@@ -532,6 +532,109 @@ attempt to open /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o 
 /usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64/crtn.o
 ld-linux-x86-64.so.2 needed by /lib64/libc.so.6
 found ld-linux-x86-64.so.2 at /lib64/ld-linux-x86-64.so.2
+/*ld --verbose*/
+
+/*修改链接脚本，把ENTRY从_start设置为main，main中把return 0替换为_exit(0), 调用ld时通过-T指定链接脚本, 此时crt1.o crtn.o crti.o也不需要再链接到二进制里*/
+/usr/libexec/gcc/x86_64-redhat-linux/4.8.5/collect2 -T main.lds --build-id --no-add-needed --eh-frame-hdr --hash-style=gnu -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -o main -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib/gcc/x86_64-redhat-linux/4.8.5/../../.. /tmp/ccAYgYY2.o -lgcc --as-needed -lgcc_s --no-as-needed -lc 
+
+
+/*通过指定_attribute__属性把.rodata中数据放入.data段, 通过ld传递参数-z max-page-size=4096修改程序段对齐方式*/
+	static unsigned char g[] __attribute__((section(".data"))) = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+								1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12,
+								5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2,
+								0, 7, 14, 5, 12, 3, 10, 1, 8, 15, 6, 13, 4, 11, 2, 9};
+
+	static unsigned int k[] __attribute__((section(".data"))) = {0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501, 0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be, 0x6b901122, 0xfd987193, 0xa679438e, 0x49b40821,
+								0xf61e2562, 0xc040b340, 0x265e5a51, 0xe9b6c7aa, 0xd62f105d, 0x02441453, 0xd8a1e681, 0xe7d3fbc8, 0x21e1cde6, 0xc33707d6, 0xf4d50d87, 0x455a14ed, 0xa9e3e905, 0xfcefa3f8, 0x676f02d9, 0x8d2a4c8a,
+								0xfffa3942, 0x8771f681, 0x6d9d6122, 0xfde5380c, 0xa4beea44, 0x4bdecfa9, 0xf6bb4b60, 0xbebfbc70, 0x289b7ec6, 0xeaa127fa, 0xd4ef3085, 0x04881d05, 0xd9d4d039, 0xe6db99e5, 0x1fa27cf8, 0xc4ac5665,
+								0xf4292244, 0x432aff97, 0xab9423a7, 0xfc93a039, 0x655b59c3, 0x8f0ccc92, 0xffeff47d, 0x85845dd1, 0x6fa87e4f, 0xfe2ce6e0, 0xa3014314, 0x4e0811a1, 0xf7537e82, 0xbd3af235, 0x2ad7d2bb, 0xeb86d391
+	};
+
+	static unsigned char shift[] __attribute__((section(".data"))) = {7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+									5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+									4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+									6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21
+									};
+
+/*可以看到此时已经没有.rodata段*/
+There are 14 section headers, starting at offset 0x12a0:
+
+Section Headers:
+  [Nr] Name              Type             Address           Offset
+       Size              EntSize          Flags  Link  Info  Align
+  [ 0]                   NULL             0000000000000000  00000000
+       0000000000000000  0000000000000000           0     0     0
+  [ 1] .interp           PROGBITS         0000000000400238  00000238
+       000000000000001c  0000000000000000   A       0     0     1
+  [ 2] .dynsym           DYNSYM           0000000000400298  00000298
+       00000000000000d8  0000000000000018   A       3     1     8
+  [ 3] .dynstr           STRTAB           0000000000400370  00000370
+       0000000000000047  0000000000000000   A       0     0     1
+  [ 4] .gnu.version      VERSYM           00000000004003b8  000003b8
+       0000000000000012  0000000000000002   A       2     0     2
+  [ 5] .gnu.version_r    VERNEED          00000000004003d0  000003d0
+       0000000000000020  0000000000000000   A       3     1     8
+  [ 6] .rela.plt         RELA             00000000004003f0  000003f0
+       00000000000000c0  0000000000000018   A       2     7     8
+  [ 7] .plt              PROGBITS         00000000004004b0  000004b0
+       0000000000000090  0000000000000010  AX       0     0     16
+  [ 8] .text             PROGBITS         0000000000400540  00000540
+       00000000000002e0  0000000000000000  AX       0     0     16
+  [ 9] .dynamic          DYNAMIC          0000000000401ec0  00000ec0
+       0000000000000140  0000000000000010  WA       3     0     8
+  [10] .got.plt          PROGBITS         0000000000402000  00001000
+       0000000000000058  0000000000000008  WA       0     0     8
+  [11] .data             PROGBITS         0000000000402060  00001060
+       00000000000001d0  0000000000000000  WA       0     0     16
+  [12] .bss              NOBITS           0000000000402230  00001230
+       0000000000003c20  0000000000000000  WA       0     0     16
+  [13] .shstrtab         STRTAB           0000000000000000  00001230
+       000000000000006c  0000000000000000           0     0     1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), l (large)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+/*可以看到段的对齐方式也修改为0x1000*/	
+Elf file type is EXEC (Executable file)
+Entry point 0x400540
+There are 8 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset             VirtAddr           PhysAddr
+                 FileSiz            MemSiz              Flags  Align
+  PHDR           0x0000000000000040 0x0000000000400040 0x0000000000400040
+                 0x00000000000001c0 0x00000000000001c0  R E    8
+  INTERP         0x0000000000000238 0x0000000000400238 0x0000000000400238
+                 0x000000000000001c 0x000000000000001c  R      1
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+  LOAD           0x0000000000000000 0x0000000000400000 0x0000000000400000
+                 0x0000000000000820 0x0000000000000820  R E    1000
+  LOAD           0x0000000000000ec0 0x0000000000401ec0 0x0000000000401ec0
+                 0x0000000000000370 0x0000000000003f90  RW     1000
+  DYNAMIC        0x0000000000000ec0 0x0000000000401ec0 0x0000000000401ec0
+                 0x0000000000000140 0x0000000000000140  RW     8
+  NOTE           0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  R      8
+  GNU_EH_FRAME   0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  R      8
+  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  RW     8
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .dynsym .dynstr .gnu.version .gnu.version_r .rela.plt .plt .text 
+   03     .dynamic .got.plt .data .bss 
+   04     .dynamic 
+   05     
+   06     
+   07     
+
+
+/*但是按照4k对齐，加载的两个段之间还是会有0字节填充，即.text节和.dynamic节之间还是有填充字节，对齐方式最小为4k，所以不同属性的段之间还是会存在空洞*/
+
 
 
 
