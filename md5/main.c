@@ -200,13 +200,13 @@ int main(int argc, char *argv[])
 	md5_update(&ctx, fileContent, fileContentLen);
 	md5_final(&ctx);
 	md5 = (unsigned char*)ctx.hash;
-	for( ; i < 16; i += 4)
-	{
-		printf((char*)format, md5[i], md5[i+1], md5[i+2], md5[i+3]);
-	}
-	printf("\n");
+	printf("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n",
+			md5[0], md5[1], md5[2], md5[3],
+			md5[4], md5[5], md5[6], md5[7],
+			md5[8], md5[9], md5[10], md5[11],
+			md5[12], md5[13], md5[14], md5[15]);
 
-	//return 0;
-	_exit(0);
+	return 0;
+	//_exit(0);
 }
 
