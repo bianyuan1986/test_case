@@ -4,14 +4,11 @@
 #include <fcntl.h>
 #include <string.h>
 
-#define FILE_CONTENT_LEN 1024*15
+#define FILE_CONTENT_LEN 1024*6
 #define ROUND_CNT 64
 
 static char fileContent[FILE_CONTENT_LEN];
 static int fileContentLen;
-
-static unsigned int constant[64];
-static unsigned char shift[64];
 
 /**********************md5 init*************************/
 #define MD5_DIGEST_SIZE		16
@@ -21,10 +18,6 @@ static unsigned char shift[64];
 //#define SECTION_VAR __attribute__((section(".data"))) 
 #define SECTION_VAR 
 
-
-#define MD5STEP(f, w, x, y, z, in, s) \
-	(w += f(x, y, z) + in, w = (w<<s | w>>(32-s)) + x)
-
 typedef unsigned int u32;
 typedef unsigned long long int u64;
 typedef unsigned char u8;
@@ -32,8 +25,8 @@ typedef unsigned char u8;
 struct md5_ctx
 {
 	u32 hash[MD5_HASH_WORDS];
-	u32 block[MD5_BLOCK_WORDS];
 	u64 byte_count;
+	u32 *block;
 };
 
 typedef unsigned int (*f)(u32 x, u32 y, u32 z);
@@ -59,17 +52,12 @@ static unsigned int F4(u32 x, u32 y, u32 z)
 }
 
 
-static void md5_transform(u32 *hash, u32 const *in)
+static void md5_transform(u32 *hash, u32 const *in, u32 len)
 {
 	u32 a, b, c, d;
 	int i = 0;
+	int j = 0;
 	u32 tmp, res;
-
-	a = hash[0];
-	b = hash[1];
-	c = hash[2];
-	d = hash[3];
-
 
 	static unsigned char g[] SECTION_VAR = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
 								1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12,
@@ -90,81 +78,68 @@ static void md5_transform(u32 *hash, u32 const *in)
 
 	static f fTable[] SECTION_VAR = {F1, F2, F3, F4};
 
-	for( ; i < 64; i++)
+	/*blockCnt = len/4/16*/
+	len >>= 6;
+	for( ; j < len; j++)
 	{
-		res = fTable[i>>4](b, c, d);
+		a = hash[0];
+		b = hash[1];
+		c = hash[2];
+		d = hash[3];
 
-		tmp = d;
-		d = c;
-		c = b;
-		a += res + k[i] + in[g[i]];
-		b += (a<<shift[i]|a>>(32-shift[i])); 
-		a = tmp;
+		for( i = 0; i < 64; i++)
+		{
+			res = fTable[i>>4](b, c, d);
+
+			tmp = d;
+			d = c;
+			c = b;
+			a += res + k[i] + in[g[i]];
+			b += (a<<shift[i]|a>>(32-shift[i])); 
+			a = tmp;
+		}
+
+		hash[0] += a;
+		hash[1] += b;
+		hash[2] += c;
+		hash[3] += d;
+
+		in += 16;
 	}
-
-	hash[0] += a;
-	hash[1] += b;
-	hash[2] += c;
-	hash[3] += d;
 }
 
-static void md5_init(struct md5_ctx *ctx)
+static void md5_calculate(struct md5_ctx *ctx)
 {
+	int padLen;
+	char *p = NULL;
+
 	ctx->hash[0] = 0x67452301;
 	ctx->hash[1] = 0xefcdab89;
 	ctx->hash[2] = 0x98badcfe;
 	ctx->hash[3] = 0x10325476;
-	ctx->byte_count = 0;
+	ctx->block = (u32*)fileContent;
+	ctx->byte_count = fileContentLen;
+
+	padLen = (56 - ((fileContentLen&0x3f)+1));
+	/*padding is mandatory, even if len%64=56*/
+	fileContent[fileContentLen++] = 0x80;
+	p = &fileContent[fileContentLen];
+	if( padLen < 0 )
+	{
+		memset(p, 0x00, padLen + sizeof(u64));
+		fileContentLen += (padLen+sizeof(u64));
+		p = &fileContent[fileContentLen];
+		padLen = 56;
+	}
+	memset(p, 0x00, padLen);
+	fileContentLen += padLen;
+	/*store len in bits count*/
+	*(u32*)&fileContent[fileContentLen] = ctx->byte_count << 3;
+	*(u32*)&fileContent[fileContentLen+4] = ctx->byte_count >> 29;
+	fileContentLen += 8;
+	md5_transform(ctx->hash, ctx->block, fileContentLen);
 }
 
-static void md5_update(struct md5_ctx *mctx, const u8 *data, unsigned int len)
-{
-	const u32 avail = sizeof(mctx->block) - (mctx->byte_count & 0x3f);
-
-	mctx->byte_count += len;
-
-	if (avail > len) {
-		memcpy((char *)mctx->block + (sizeof(mctx->block) - avail),
-		       data, len);
-		return;
-	}
-
-	memcpy((char *)mctx->block + (sizeof(mctx->block) - avail),
-	       data, avail);
-
-	md5_transform(mctx->hash, mctx->block);
-	data += avail;
-	len -= avail;
-
-	while (len >= sizeof(mctx->block)) {
-		memcpy(mctx->block, data, sizeof(mctx->block));
-		md5_transform(mctx->hash, mctx->block);
-		data += sizeof(mctx->block);
-		len -= sizeof(mctx->block);
-	}
-
-	memcpy(mctx->block, data, len);
-}
-
-static void md5_final(struct md5_ctx *mctx)
-{
-	const unsigned int offset = mctx->byte_count & 0x3f;
-	char *p = (char *)mctx->block + offset;
-	int padding = 56 - (offset + 1);
-
-	*p++ = 0x80;
-	if (padding < 0) {
-		memset(p, 0x00, padding + sizeof (u64));
-		md5_transform(mctx->hash, mctx->block);
-		p = (char *)mctx->block;
-		padding = 56;
-	}
-
-	memset(p, 0, padding);
-	mctx->block[14] = mctx->byte_count << 3;
-	mctx->block[15] = mctx->byte_count >> 29;
-	md5_transform(mctx->hash, mctx->block);
-}
 /**********************md5 init end*************************/
 
 char *getExeFile()
@@ -174,12 +149,15 @@ char *getExeFile()
 	int fd = -1;
 	struct stat st;
 	static char path[PATH_LEN];
-	static unsigned long long int format1[2] SECTION_VAR;
 
 	pid = getpid();
-	format1[0] = 0x64252f636f72702f;
-	format1[1] = 0x000000006578652f;
-	snprintf(path, PATH_LEN, (char*)format1, pid);
+	/*asm volatile( "mov $0x14, %%eax\n\t"
+					"int $0x80\n\t"
+					"mov %eax, %0;"
+					:"=r"(pid)
+					:
+			);*/
+	snprintf(path, PATH_LEN, "/proc/%d/exe", pid);
 	stat(path, &st);
 	fd = open(path, O_RDONLY);
 	read(fd, fileContent, st.st_size);
@@ -191,14 +169,9 @@ int main(int argc, char *argv[])
 	struct md5_ctx ctx;
 	int i = 0;
 	unsigned char *md5 = NULL;
-	static unsigned long long int format[3] SECTION_VAR;
 
-	format[0] = format[1] = 0x7832302578323025;
-	format[2] = 0;
 	getExeFile();
-	md5_init(&ctx);
-	md5_update(&ctx, fileContent, fileContentLen);
-	md5_final(&ctx);
+	md5_calculate(&ctx);
 	md5 = (unsigned char*)ctx.hash;
 	printf("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n",
 			md5[0], md5[1], md5[2], md5[3],
@@ -207,6 +180,5 @@ int main(int argc, char *argv[])
 			md5[12], md5[13], md5[14], md5[15]);
 
 	return 0;
-	//_exit(0);
 }
 
