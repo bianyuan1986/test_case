@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
+#include <sys/syscall.h>
 
 #define FILE_CONTENT_LEN 1024*6
 #define ROUND_CNT 64
@@ -142,7 +143,7 @@ static void md5_calculate(struct md5_ctx *ctx)
 
 /**********************md5 init end*************************/
 
-char *getExeFile()
+char *getExeFile(char *filename)
 {
 #define PATH_LEN 20
 	pid_t pid = 0;
@@ -150,17 +151,21 @@ char *getExeFile()
 	struct stat st;
 	static char path[PATH_LEN];
 
-	pid = getpid();
 	/*asm volatile( "mov $0x14, %%eax\n\t"
 					"int $0x80\n\t"
 					"mov %eax, %0;"
 					:"=r"(pid)
 					:
 			);*/
-	snprintf(path, PATH_LEN, "/proc/%d/exe", pid);
-	stat(path, &st);
-	fd = open(path, O_RDONLY);
+	/*pid = getpid();
+	snprintf(path, PATH_LEN, "/proc/%d/exe", pid);*/
+	/*stat(filename, &st);
+	fd = open(filename, O_RDONLY);
 	read(fd, fileContent, st.st_size);
+	*/
+	syscall(SYS_stat, filename, &st);
+	fd = syscall(SYS_open, filename, O_RDONLY);
+	syscall(SYS_read, fd, fileContent, st.st_size);
 	fileContentLen = st.st_size;
 }
 
@@ -170,7 +175,7 @@ int main(int argc, char *argv[])
 	int i = 0;
 	unsigned char *md5 = NULL;
 
-	getExeFile();
+	getExeFile(argv[0]);
 	md5_calculate(&ctx);
 	md5 = (unsigned char*)ctx.hash;
 	printf("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n",

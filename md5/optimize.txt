@@ -682,5 +682,17 @@ Key to Flags:
 /*此时只有.got.plt的58个字节，所以文件中.rodata和.got.plt中间依然存在空洞，考虑去除.got.plt。因为程序动态链接时ld会把函数地址写入.got.plt所以该节不能合并到.text段中*/
 
 /*代码中去除了return直接调用了_exit，如果重定向输出会发现程序的输出不能正确输出到文件，因此在提交平台会验证错误*/
+223 00000000004004f8 <.init>:
+224   4004f8:   48 83 ec 08             sub    $0x8,%rsp
+225   4004fc:   48 8b 05 f5 1a 00 00    mov    0x1af5(%rip),%rax        # 401ff8 <open@plt+0x1a58>
+226   400503:   48 85 c0                test   %rax,%rax
+227   400506:   74 05                   je     40050d <getpid@plt-0x23>
+228   400508:   e8 73 00 00 00          callq  400580 <__gmon_start__@plt>
+229   40050d:   48 83 c4 08             add    $0x8,%rsp
+230   400511:   c3                      retq
+
+/*标准输入、输出在执行main函数之前就已经被打开*/
 /*把return还原*/
+/*通过syscall来执行系统调用，减少.plt和.got.plt的大小。直接通过argv[0]获取可执行文件名称，不需要通过/proc获取，减少getpid调用*/
+
 
