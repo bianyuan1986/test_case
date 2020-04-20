@@ -5,10 +5,10 @@
 #include <string.h>
 #include <sys/syscall.h>
 
-#define FILE_CONTENT_LEN 1024*6
+#define FILE_CONTENT_LEN 1024*16
 #define ROUND_CNT 64
 
-static char fileContent[FILE_CONTENT_LEN];
+static unsigned char fileContent[FILE_CONTENT_LEN];
 static int fileContentLen;
 
 /**********************md5 init*************************/
@@ -143,30 +143,94 @@ static void md5_calculate(struct md5_ctx *ctx)
 
 /**********************md5 init end*************************/
 
-char *getExeFile(char *filename)
+void getExeFile(char *filename)
 {
 #define PATH_LEN 20
 	pid_t pid = 0;
-	int fd = -1;
+	unsigned int fd = -1;
 	struct stat st;
 	static char path[PATH_LEN];
+	static char digit[20];
+	int i = 0;
+	int pos = 0;
 
-	/*asm volatile( "mov $0x14, %%eax\n\t"
-					"int $0x80\n\t"
-					"mov %eax, %0;"
-					:"=r"(pid)
-					:
-			);*/
-	/*pid = getpid();
-	snprintf(path, PATH_LEN, "/proc/%d/exe", pid);*/
+	/*pid = getpid();*/
+	asm volatile("movq %1, %%rax;"
+			"syscall;"
+			"movl %%eax, %0;"
+			:"=r"(pid)
+			:"r"((unsigned long long)39) 
+			:"%rax", "%rdi", "%rcx");
+
+	while( pid >= 10 )
+	{
+		digit[i++] = (char)((pid%10)|0x30);
+		pid /= 10;
+	}
+	if( pid > 0 )
+	{
+		digit[i] = (char)(pid|0x30);
+	}
+	path[0] = '/';
+	path[1] = 'p';
+	path[2] = 'r';
+	path[3] = 'o';
+	path[4] = 'c';
+	path[5] = '/';
+	pos = 6;
+	while( i >= 0 )
+	{
+		path[pos] = digit[i];
+		i--;
+		pos++;
+	}
+	path[pos] = '/';
+	path[++pos] = 'e';
+	path[++pos] = 'x';
+	path[++pos] = 'e';
+	/*snprintf(path, PATH_LEN, "/proc/%d/exe", pid);*/
+
+	filename = path;
 	/*stat(filename, &st);
 	fd = open(filename, O_RDONLY);
 	read(fd, fileContent, st.st_size);
 	*/
-	syscall(SYS_stat, filename, &st);
+
+	/*syscall(SYS_stat, filename, &st);
 	fd = syscall(SYS_open, filename, O_RDONLY);
-	syscall(SYS_read, fd, fileContent, st.st_size);
+	syscall(SYS_read, fd, fileContent, st.st_size);*/
+
+	asm volatile("movq %0, %%rax;"
+			"movq %1, %%rdi;"
+			"movq %2, %%rsi;"
+			"syscall;"
+			:
+			:"r"((unsigned long long)4), "m"(filename), "r"(&st)
+			:"%rax", "%rdi", "%rsi", "%rcx");
+	//syscall(SYS_stat, filename, &st);
 	fileContentLen = st.st_size;
+
+	asm volatile("movq %1, %%rax;"
+			"movq %2, %%rdi;"
+			"movq %3, %%rsi;"
+			"movq %4, %%rdx;"
+			"syscall;"
+			"movl %%eax, %0;"
+			:"=r"(fd)
+			:"r"((unsigned long long)2), "m"(filename), "r"((unsigned long long)0), "r"((unsigned long long)0)
+			:"%rax", "%rdi", "%rsi", "%rdx");
+	//fd = syscall(SYS_open, filename, O_RDONLY);
+
+	asm volatile("movq $0, %%rcx;"
+			"movq %0, %%rax;"
+			"movq %1, %%rdi;"
+			"movq %2, %%rsi;"
+			"movq %3, %%rdx;"
+			"syscall;"
+			:
+			:"r"((unsigned long long)0), "r"((unsigned long long)fd), "r"(fileContent), "m"((unsigned long long)st.st_size)
+			:"%rax", "%rdi", "%rsi", "%rdx");
+	//syscall(SYS_read, fd, fileContent, st.st_size);
 }
 
 int main(int argc, char *argv[])
@@ -175,15 +239,41 @@ int main(int argc, char *argv[])
 	int i = 0;
 	unsigned char *md5 = NULL;
 
+	static unsigned char SECTION_VAR alpha[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8',
+								'9', 'a', 'b', 'c', 'd', 'e', 'f'}; 
 	getExeFile(argv[0]);
 	md5_calculate(&ctx);
 	md5 = (unsigned char*)ctx.hash;
-	printf("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n",
+	while( i < 16 )
+	{
+		fileContent[2*i] = alpha[md5[i]>>4];
+		fileContent[2*i+1] = alpha[md5[i]&0xf];
+		i++;
+	}
+	fileContent[2*i] = '\n';
+	/*syscall(SYS_write, 1, fileContent, 33);*/
+
+	asm volatile("movq %0, %%rax;"
+			"movq %1, %%rdi;"
+			"movq %2, %%rsi;"
+			"movq %3, %%rdx;"
+			"syscall;"
+			:
+			:"r"((unsigned long long)1), "r"((unsigned long long)1), "r"(fileContent), "r"((unsigned long long)33)
+			:"%rax", "%rdi", "%rsi", "%rdx", "%r8");
+
+	/*printf("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n",
 			md5[0], md5[1], md5[2], md5[3],
 			md5[4], md5[5], md5[6], md5[7],
 			md5[8], md5[9], md5[10], md5[11],
-			md5[12], md5[13], md5[14], md5[15]);
+			md5[12], md5[13], md5[14], md5[15]);*/
 
 	return 0;
+	/*asm volatile("movq %0, %%rax;"
+			"movq %1, %%rdi;"
+			"syscall;"
+			:
+			:"r"((unsigned long long)60), "r"((unsigned long long)0) 
+			:"%rax", "%rdi");*/
 }
 

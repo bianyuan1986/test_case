@@ -694,5 +694,204 @@ Key to Flags:
 /*标准输入、输出在执行main函数之前就已经被打开*/
 /*把return还原*/
 /*通过syscall来执行系统调用，减少.plt和.got.plt的大小。直接通过argv[0]获取可执行文件名称，不需要通过/proc获取，减少getpid调用*/
+161     syscall(SYS_stat, filename, &st);
+162     fd = syscall(SYS_open, filename, O_RDONLY);
+163     syscall(SYS_read, fd, fileContent, st.st_size);
+
+203     static unsigned char SECTION_VAR alpha[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8',
+204                                 '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+205     getExeFile(argv[0]);
+206     md5_calculate(&ctx);
+207     md5 = (unsigned char*)ctx.hash;
+208     while( i < 16 )
+209     {
+210         fileContent[2*i] = alpha[md5[i]>>4];
+211         fileContent[2*i+1] = alpha[md5[i]&0xf];
+212         i++;
+213     }
+214     fileContent[2*i] = '\n';
+215     syscall(SYS_write, 1, fileContent, 33);
+
+
+/*.plt和.got.plt的体积减小，其中只包含了syscall的重定向目录项，继续考虑使用内联汇编把syscall的引用也去掉*/
+/*32位系统使用int 0x80进入系统调用，64位系统使用syscall指令进入系统调用*/
+165     asm volatile("movq %0, %%rax;"
+166             "movq %1, %%rdi;"
+167             "movq %2, %%rsi;"
+168             "syscall;"
+169             :
+170             :"r"((unsigned long long)4), "r"(filename), "r"(&st)
+171             :"%rax", "%rdi", "%rsi", "%rcx");
+172     //syscall(SYS_stat, filename, &st);
+173     fileContentLen = st.st_size;
+174 
+175     asm volatile("movq %1, %%rax;"
+176             "movq %2, %%rdi;"
+177             "movq %3, %%rsi;"
+178             "movq %4, %%rdx;"
+179             "syscall;"
+180             "movl %%eax, %0;"
+181             :"=r"(fd)
+182             :"r"((unsigned long long)2), "r"(filename), "r"((unsigned long long)0), "r"((unsigned long long)0)
+183             :"%rax", "%rdi", "%rsi", "%rdx");
+184     //fd = syscall(SYS_open, filename, O_RDONLY);
+185 
+186     asm volatile("movq %0, %%rax;"
+187             "movq %1, %%rdi;"
+188             "movq %2, %%rsi;"
+189             "movq %3, %%rdx;"
+190             "syscall;"
+191             :
+192             :"r"((unsigned long long)0), "r"((unsigned long long)fd), "r"(fileContent), "r"((unsigned long long)st.st_size)
+193             :"%rax", "%rdi", "%rsi", "%rdx");
+194     //syscall(SYS_read, fd, fileContent, st.st_size);
+
+/*使用内联汇编后会产生堆栈，gdb跟踪调试发现执行stat和read系统调用时产生的汇编代码会修改rcx寄存器，导致后续系统调用参数赋值时出现脏数据，因此在
+ 会影响到的寄存器中加入"%rcx"*/
+
+(gdb) disassemble 
+Dump of assembler code for function getExeFile:
+	0x0000000000400686 <+0>:     sub    $0x98,%rsp
+	0x000000000040068d <+7>:     mov    %rdi,%rcx
+	0x0000000000400690 <+10>:    mov    $0x4,%edx
+	0x0000000000400695 <+15>:    mov    %rdx,%rax
+	0x0000000000400698 <+18>:    mov    %rcx,%rdi
+	0x000000000040069b <+21>:    mov    %rsp,%rsi
+	0x000000000040069e <+24>:    syscall 
+	=> 0x00000000004006a0 <+26>:    mov    $0x2,%edi
+	0x00000000004006a5 <+31>:    mov    %rcx,%rsi
+	0x00000000004006a8 <+34>:    xor    %dl,%dl
+	0x00000000004006aa <+36>:    xor    %eax,%eax
+	0x00000000004006ac <+38>:    callq  0x400420 <syscall@plt>
+	0x00000000004006b1 <+43>:    mov    0x30(%rsp),%rsi
+	0x00000000004006b6 <+48>:    mov    $0x402050,%edx
+	0x00000000004006bb <+53>:    xor    %edi,%edi
+	0x00000000004006bd <+55>:    lea    0x1(%rsi),%rcx
+	0x00000000004006c1 <+59>:    mov    %eax,%esi
+	0x00000000004006c3 <+61>:    xor    %eax,%eax
+	0x00000000004006c5 <+63>:    callq  0x400420 <syscall@plt>
+	0x00000000004006ca <+68>:    mov    0x30(%rsp),%rax
+	0x00000000004006cf <+73>:    mov    %eax,0x196b(%rip)        # 0x402040 <fileContentLen>
+	0x00000000004006d5 <+79>:    add    $0x98,%rsp
+	0x00000000004006dc <+86>:    retq   
+	End of assembler dump.
+	(gdb) print $rcx
+	$7 = -1
+
+/*可以看到.plt中只有两个需要动态重定位的符号*/	
+16 Disassembly of section .plt:
+17 
+18 00000000004003d0 <__libc_start_main@plt-0x10>:
+19   4003d0:   ff 35 32 1c 00 00       pushq  0x1c32(%rip)        # 402008 <__gmon_start__@plt+0x1c18>
+20   4003d6:   ff 25 34 1c 00 00       jmpq   *0x1c34(%rip)        # 402010 <__gmon_start__@plt+0x1c20>
+21   4003dc:   0f 1f 40 00             nopl   0x0(%rax)
+22 
+23 00000000004003e0 <__libc_start_main@plt>:
+24   4003e0:   ff 25 32 1c 00 00       jmpq   *0x1c32(%rip)        # 402018 <__gmon_start__@plt+0x1c28>
+25   4003e6:   68 00 00 00 00          pushq  $0x0
+26   4003eb:   e9 e0 ff ff ff          jmpq   4003d0 <__libc_start_main@plt-0x10>
+27 
+28 00000000004003f0 <__gmon_start__@plt>:
+29   4003f0:   ff 25 2a 1c 00 00       jmpq   *0x1c2a(%rip)        # 402020 <__gmon_start__@plt+0x1c30>
+30   4003f6:   68 01 00 00 00          pushq  $0x1
+31   4003fb:   e9 d0 ff ff ff          jmpq   4003d0 <__libc_start_main@plt-0x10>
+
+[root@VM_14_30_centos ~/test_case/md5]# readelf -r main
+
+Relocation section '.rela.dyn' at offset 0x360 contains 1 entries:
+Offset          Info           Type           Sym. Value    Sym. Name + Addend
+000000401ff8  000200000006 R_X86_64_GLOB_DAT 0000000000000000 __gmon_start__ + 0
+
+Relocation section '.rela.plt' at offset 0x378 contains 2 entries:
+Offset          Info           Type           Sym. Value    Sym. Name + Addend
+000000402018  000100000007 R_X86_64_JUMP_SLO 0000000000000000 __libc_start_main + 0
+000000402020  000200000007 R_X86_64_JUMP_SLO 0000000000000000 __gmon_start__ + 0
+[root@VM_14_30_centos ~/test_case/md5]# objdump -s -j .got.plt main
+
+main:     file format elf64-x86-64
+
+Contents of section .got.plt:
+402000 681e4000 00000000 00000000 00000000  h.@.............
+402010 00000000 00000000 e6034000 00000000  ..........@.....
+402020 f6034000 00000000                    ..@.....   
+
+
+/*使用自定义链接脚本，入口函数改为main，去掉对运行时库的符号引用，同时去掉对_exit()的调用改为直接系统调用sys_exit*/
+
+Elf file type is EXEC (Executable file)
+Entry point 0x400340
+There are 8 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset             VirtAddr           PhysAddr
+                 FileSiz            MemSiz              Flags  Align
+  PHDR           0x0000000000000040 0x0000000000400040 0x0000000000400040
+                 0x00000000000001c0 0x00000000000001c0  R E    8
+  INTERP         0x0000000000000200 0x0000000000400200 0x0000000000400200
+                 0x000000000000001c 0x000000000000001c  R      1
+      [Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+  LOAD           0x0000000000000000 0x0000000000400000 0x0000000000400000
+                 0x0000000000000780 0x0000000000000780  RWE    1000
+  LOAD           0x0000000000001000 0x0000000000402000 0x0000000000402000
+                 0x0000000000000000 0x0000000000004010  RW     1000
+  DYNAMIC        0x0000000000000270 0x0000000000400270 0x0000000000400270
+                 0x00000000000000d0 0x00000000000000d0  RW     8
+  NOTE           0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  R      8
+  GNU_EH_FRAME   0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  R      8
+  GNU_STACK      0x0000000000000000 0x0000000000000000 0x0000000000000000
+                 0x0000000000000000 0x0000000000000000  RW     8
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .dynsym .dynstr .dynamic .text .rodata 
+   03     .bss 
+   04     .dynamic 
+   05     
+   06     
+   07     
+
+/*可以看到加载的段还是两个，但是第二段只有.bss节，该节并不占用文件大小。同时文件中也不包含需要重定位的符号了*/
+
+[root@VM_14_30_centos ~/test_case/md5]# readelf -r main
+
+There are no relocations in this file.
+
+There are 9 section headers, starting at offset 0x880:
+
+Section Headers:
+  [Nr] Name              Type             Address           Offset
+       Size              EntSize          Flags  Link  Info  Align
+  [ 0]                   NULL             0000000000000000  00000000
+       0000000000000000  0000000000000000           0     0     0
+  [ 1] .interp           PROGBITS         0000000000400200  00000200
+       000000000000001c  0000000000000000   A       0     0     1
+  [ 2] .dynsym           DYNSYM           0000000000400260  00000260
+       0000000000000000  0000000000000018   A       3     0     8
+  [ 3] .dynstr           STRTAB           0000000000400260  00000260
+       000000000000000b  0000000000000000   A       0     0     1
+  [ 4] .dynamic          DYNAMIC          0000000000400270  00000270
+       00000000000000d0  0000000000000010  WA       3     0     8
+  [ 5] .text             PROGBITS         0000000000400340  00000340
+       000000000000034c  0000000000000000  AX       0     0     4
+  [ 6] .rodata           PROGBITS         0000000000400690  00000690
+       00000000000001b0  0000000000000000   A       0     0     16
+  [ 7] .bss              NOBITS           0000000000402000  00001000
+       0000000000004040  0000000000000000  WA       0     0     16
+  [ 8] .shstrtab         STRTAB           0000000000000000  00000840
+       000000000000003f  0000000000000000           0     0     1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), l (large)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+/*查看文件大小*/
+-rwxr-xr-x 1 root root 2752 Apr 20 17:38 main
+/*查看依赖的动态库*/
+	not a dynamic executable
+
 
 
