@@ -268,12 +268,12 @@ int main(int argc, char *argv[])
 			md5[8], md5[9], md5[10], md5[11],
 			md5[12], md5[13], md5[14], md5[15]);*/
 
-	return 0;
-	/*asm volatile("movq %0, %%rax;"
+	//return 0;
+	asm volatile("movq %0, %%rax;"
 			"movq %1, %%rdi;"
 			"syscall;"
 			:
 			:"r"((unsigned long long)60), "r"((unsigned long long)0) 
-			:"%rax", "%rdi");*/
+			:"%rax", "%rdi");
 }
 
