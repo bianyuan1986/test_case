@@ -894,4 +894,64 @@ Key to Flags:
 	not a dynamic executable
 
 
+/**/
+
+[root@VM_14_30_centos ~/test_case/md5/tool]# objdump -d crt1.o
+crt1.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <_start>:
+   0:	31 ed                	xor    %ebp,%ebp
+   2:	49 89 d1             	mov    %rdx,%r9
+   5:	5e                   	pop    %rsi
+   6:	48 89 e2             	mov    %rsp,%rdx
+   9:	48 83 e4 f0          	and    $0xfffffffffffffff0,%rsp
+   d:	50                   	push   %rax
+   e:	54                   	push   %rsp
+   f:	49 c7 c0 00 00 00 00 	mov    $0x0,%r8
+  16:	48 c7 c1 00 00 00 00 	mov    $0x0,%rcx
+  1d:	48 c7 c7 00 00 00 00 	mov    $0x0,%rdi
+  24:	e8 00 00 00 00       	callq  29 <_start+0x29>
+  29:	f4                   	hlt    
+  2a:	66 90                	xchg   %ax,%ax
+
+/*_init函数和_fini的起始部分在crti.o中*/
+[root@VM_14_30_centos ~/test_case/md5/tool]# objdump -d crti.o
+crti.o:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+0000000000000000 <_init>:
+   0:	48 83 ec 08          	sub    $0x8,%rsp
+   4:	48 8b 05 00 00 00 00 	mov    0x0(%rip),%rax        # b <_init+0xb>
+   b:	48 85 c0             	test   %rax,%rax
+   e:	74 05                	je     15 <_init+0x15>
+  10:	e8 00 00 00 00       	callq  15 <_init+0x15>
+
+Disassembly of section .fini:
+
+0000000000000000 <_fini>:
+   0:	48 83 ec 08          	sub    $0x8,%rsp
+
+/*_init函数和_fini的结束部分在crti.o中*/
+[root@VM_14_30_centos ~/test_case/md5/tool]# objdump -d crtn.o
+crtn.o:     file format elf64-x86-64
+
+
+Disassembly of section .init:
+
+0000000000000000 <.init>:
+   0:	48 83 c4 08          	add    $0x8,%rsp
+   4:	c3                   	retq   
+
+Disassembly of section .fini:
+
+0000000000000000 <.fini>:
+   0:	48 83 c4 08          	add    $0x8,%rsp
+   4:	c3                   	retq  
+
+
 
