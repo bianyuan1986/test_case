@@ -954,4 +954,14 @@ Disassembly of section .fini:
    4:	c3                   	retq  
 
 
+--omagic
+    Set the text and data sections to be readable and writable. Also, do not page-align the data segment. If the output format supports Unix style magic numbers, mark the output as OMAGIC.
 
+/*1、把指令填充到文件头空闲处，通过jmp指令连接
+  2、通过汇编实现
+  3、提前计算文件每64字节数据块的MD5并存储到文件末尾直接使用，填充部分放到程序里计算或者编译时计算，需要通过汇编控制
+  4、通过sse指令优化MD5计算
+  5、通过fsin指令优化MD5计算
+  6、可以直接通过读取加载到内存的镜像计算MD5，需要汇编保证加载到内存和镜像和文件保持一致
+
+ */
