@@ -1,0 +1,60 @@
+
+/*phash = inet_ehashfn( 0xca246b64, 34567, 0xca246b64, 23456+(++sport));*/
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 10000
+Worker:0 Cnt:10119
+Worker:1 Cnt:9994
+Worker:2 Cnt:9887
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 100000
+Worker:0 Cnt:101373
+Worker:1 Cnt:99440
+Worker:2 Cnt:99187
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 1000000                     
+Worker:0 Cnt:1013790
+Worker:1 Cnt:994811
+Worker:2 Cnt:991399
+/*在端口比较分散的情况下，负载情况比较均匀，两个核之间负载相差大约2%*/
+
+/*phash = inet_ehashfn( 0xca246b64, 34567, 0xca246b64, 23456+(++sport)%500);*/
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 10000                       
+Worker:0 Cnt:11340
+Worker:1 Cnt:9600
+Worker:2 Cnt:9060
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 100000
+Worker:0 Cnt:113414
+Worker:1 Cnt:95982
+Worker:2 Cnt:90604
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 1000000
+Worker:0 Cnt:1134115
+Worker:1 Cnt:959832
+Worker:2 Cnt:906053
+/*如果端口范围较小，比如使用wrk测试时指定了连接数，此时源端口范围较小，可以看到负载就会差别较大，最大能相差20%*/
+
+/*phash = inet_ehashfn( 0xca246b64, 34567, 0xca246b64, 23456+(++sport)%200);*/
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 1000000
+Worker:0 Cnt:1184963
+Worker:1 Cnt:765159
+Worker:2 Cnt:1049878
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 100000 
+Worker:0 Cnt:118494
+Worker:1 Cnt:76517
+Worker:2 Cnt:104989
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 10000 
+Worker:0 Cnt:11850
+Worker:1 Cnt:7650
+Worker:2 Cnt:10500
+/*端口范围越小，负载越会不均衡*/
+
+/*phash = inet_ehashfn( 0xca246b64, 34567, 0xca246b64, 23456+(++sport)%100);*/
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 10000
+Worker:0 Cnt:12900
+Worker:1 Cnt:6300
+Worker:2 Cnt:10800
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 100000
+Worker:0 Cnt:129000
+Worker:1 Cnt:63004
+Worker:2 Cnt:107996
+[root@VM_14_30_centos ~/test_case/reuse_port_load_test]# ./reuse_port_load_test 3 1000000
+Worker:0 Cnt:1290022
+Worker:1 Cnt:630024
+Worker:2 Cnt:1079954
+

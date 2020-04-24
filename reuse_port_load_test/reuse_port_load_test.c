@@ -233,8 +233,11 @@ int choose(int cnt)
 	int matches = 0;
 	unsigned int phash = 0;
 	int result = 0;
-	static unsigned short int sport = 1024;
+	static unsigned short int sport = 23456;
+	unsigned int saddr = 0xca246b64;
 
+	++sport;
+	saddr += sport%100;
 	for( ; i < cnt; i++)
 	{
 		score = compute_score();
@@ -242,7 +245,9 @@ int choose(int cnt)
 		{
 			result = i;
 			hiscore = score;
-			phash = inet_ehashfn( 0xca246b64, 34567, 0xca246b64, sport++);
+			//phash = inet_ehashfn( 0xca246b64, 34567, 0xca246b64, sport);
+			//phash = inet_ehashfn( 0xca246b64, 34567, 0xca246b64, sport%10);
+			phash = inet_ehashfn( 0xca246b64, 34567, saddr, sport%10);
 			matches = 1;
 		}
 		else if( score == hiscore )
